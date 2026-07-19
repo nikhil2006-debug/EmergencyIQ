@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { SituationState } from "@/lib/schema";
 import { motion, useSpring, useTransform } from "framer-motion";
 
@@ -16,6 +16,8 @@ const CONFIG: Record<string, { color: string; label: string }> = {
     High: { color: "#f2914b", label: "Priority Response Required" },
     Critical: { color: "#e5484d", label: "Immediate Response Required" },
 };
+
+const EASE_OUT: [number, number, number, number] = [0, 0, 0.58, 1];
 
 function AnimatedScore({ value }: { value: number }) {
     const spring = useSpring(0, { stiffness: 60, damping: 20 });
@@ -55,7 +57,7 @@ export default function SeverityMeter({ severity, severityScore, previousSeverit
             style={{ borderColor: cfg.color }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.4, ease: EASE_OUT }}
             key={severity}
         >
             {/* Subtle severity glow */}
@@ -108,7 +110,7 @@ export default function SeverityMeter({ severity, severityScore, previousSeverit
                     }}
                     initial={{ width: 0 }}
                     animate={{ width: `${severityScore}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    transition={{ duration: 0.8, ease: EASE_OUT }}
                 />
             </div>
         </motion.div>

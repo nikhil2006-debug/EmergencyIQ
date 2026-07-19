@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Message, SituationState } from "@/lib/schema";
 import { scenarios } from "@/lib/scenarios";
 import { nowTime, secondsAgoLabel } from "@/lib/utils";
@@ -23,8 +23,8 @@ export default function Home() {
     const [playingIndex, setPlayingIndex] = useState<number | null>(null);
     const [lastUpdated, setLastUpdated] = useState<number | null>(null);
     const [, setTick] = useState(0);
-    const previousSeverity = useRef<SituationState["severity"] | null>(null);
-    const previousConfidence = useRef<number | null>(null);
+    const [previousSeverity, setPreviousSeverity] = useState<SituationState["severity"] | null>(null);
+    const [previousConfidence, setPreviousConfidence] = useState<number | null>(null);
     const [toast, setToast] = useState<string | null>(null);
 
     // Incident number is generated client-side only, after mount, to avoid
@@ -33,7 +33,10 @@ export default function Home() {
     const [incidentNumber, setIncidentNumber] = useState<number | null>(null);
 
     useEffect(() => {
-        setIncidentNumber(Math.floor(1000 + Math.random() * 9000));
+        const timer = setTimeout(() => {
+            setIncidentNumber(Math.floor(1000 + Math.random() * 9000));
+        }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -65,8 +68,8 @@ export default function Home() {
 
             let finalConvo = withCaller;
             if (data.ok) {
-                previousSeverity.current = situationState?.severity ?? null;
-                previousConfidence.current = situationState?.confidence ?? null;
+                setPreviousSeverity(situationState?.severity ?? null);
+                setPreviousConfidence(situationState?.confidence ?? null);
                 setSituationState(data.situationState);
                 setLastUpdated(Date.now());
                 setToast("AI Situation Updated");
@@ -92,8 +95,8 @@ export default function Home() {
         setConversation([]);
         setSituationState(null);
         setLastUpdated(null);
-        previousSeverity.current = null;
-        previousConfidence.current = null;
+        setPreviousSeverity(null);
+        setPreviousConfidence(null);
         setPlayingIndex(null);
     }
 
@@ -193,7 +196,7 @@ export default function Home() {
                 <SeverityMeter
                     severity={situationState?.severity ?? null}
                     severityScore={situationState?.severityScore ?? null}
-                    previousSeverity={previousSeverity.current}
+                    previousSeverity={previousSeverity}
                 />
 
                 {/* Two-Column Layout */}
@@ -210,7 +213,7 @@ export default function Home() {
                     {/* Right — Intelligence Panels */}
                     <div className="space-y-4">
                         <AIStatusIndicator loading={loading} statusLabel={secondsAgoLabel(lastUpdated)} />
-                        <SituationSummary state={situationState} previousConfidence={previousConfidence.current} />
+                        <SituationSummary state={situationState} previousConfidence={previousConfidence} />
                         <CriticalUnknownsPanel unknowns={situationState?.criticalUnknowns ?? []} />
                         <NextQuestionCard
                             question={situationState?.nextQuestion ?? null}
