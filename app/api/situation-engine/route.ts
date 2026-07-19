@@ -30,6 +30,10 @@ export async function POST(req: Request) {
             }
         });
 
+        if (!response.text) {
+            throw new Error("Gemini returned an empty response.");
+        }
+
         const situationState = JSON.parse(response.text);
         return Response.json({ ok: true, situationState });
     } catch (err) {
